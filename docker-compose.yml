@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  backend:
+    build: api 
+    ports:
+      - 8000:8000
+    volumes:
+      - ./api:/app
+  frontend:
+    build: ui 
+    ports:
+      - 5173:5173
+    volumes:
+      - ./ui:/app
