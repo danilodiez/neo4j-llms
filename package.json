@@ -1,0 +1,9 @@
+{
+	"dependencies": {
+		"@visx/network": "^3.3.0",
+		"@visx/responsive": "^3.3.0",
+		"force-graph": "^1.43.4",
+		"neovis.js": "^2.1.0",
+		"react-force-graph-2d": "^1.25.1"
+	}
+}

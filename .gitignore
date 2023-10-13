@@ -35,4 +35,4 @@ share/python-wheels/
 MANIFEST
 
 # Python virtual env
-/api/llm-api/*
+/api/llm-api/lib/*

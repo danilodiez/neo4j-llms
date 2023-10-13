@@ -52,7 +52,8 @@ cypher_chain = GraphCypherQAChain.from_llm(
     ChatOpenAI(openai_api_key=OPEN_AI_KEY, temperature=0),
     graph=graph,
     verbose=True,
-    cypher_prompt=CYPHER_GENERATION_PROMPT
+    cypher_prompt=CYPHER_GENERATION_PROMPT,
+    validate_cypher=True,
 )
 
 # Agent for creating/updating the neo4j schema is info not enough
@@ -157,4 +158,10 @@ async def root():
 
 @app.get("/chat/{input}")
 async def call_chat(input):
-    return {"response": agent.run(input), "graph": graph.schema}
+    return {
+        "response": agent.run(input),
+        "graph": graph.query("""
+                             MATCH (n)-[r]->(m)
+                            RETURN n, r, m
+                             """)
+    }
