@@ -8,8 +8,8 @@ from langchain.agents import AgentType
 from langchain.prompts import MessagesPlaceholder, PromptTemplate
 from langchain.memory import ConversationBufferMemory
 from langchain.llms import OpenAI
-from langchain.tools import StructuredTool, BaseTool
-from langchain.callbacks.manager import CallbackManagerForToolRun
+from langchain.tools import BaseTool
+from pydantic import BaseModel
 
 from dotenv import load_dotenv
 import os
@@ -151,13 +151,17 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.get("/chat/{input}")
-async def call_chat(input):
+class Message(BaseModel):
+    message: str
+
+
+@app.post("/chat/")
+async def call_chat(input: Message):
     AGENT_PROMPT = '''Use only the provided tools, if you call the Search tool,
     translate the cypher query to natural language to answer the user if the
     user gives an affirmation, use Cypher Tool and then the Update-DB Tool'''
     return {
-        "response": agent.run("{}-{}".format(input, AGENT_PROMPT)),
+        "response": agent.run("{}-{}".format(input.message, AGENT_PROMPT)),
         "graph": graph.query("""
                              MATCH (n)-[r]->(m)
                             RETURN n, r, m

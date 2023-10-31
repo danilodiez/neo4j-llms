@@ -10,7 +10,13 @@ function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessages((prev) => [...prev, input]);
-    const response = await fetch("http://127.0.0.1:8000/chat/" + input);
+    const response = await fetch("http://127.0.0.1:8000/chat/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ message: input }),
+    });
     const data = await response.json();
     const { graph } = data;
     // data.graph = relationships[]
@@ -57,17 +63,16 @@ function App() {
     setInput("");
   };
 
-  console.log(graphData);
   return (
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: "400px 1fr",
+        gridTemplateColumns: "40% 1fr",
         gap: "10px",
-        width: "80%",
+        width: "100vw",
       }}
     >
-      <div style={{ overflowY: "scroll", maxHeight: "700px" }}>
+      <div style={{ overflowY: "scroll", maxHeight: "90%", overflowX: "hidden"}}>
         {messages.map((msg, index) => (
           <div
             key={index}
@@ -88,7 +93,7 @@ function App() {
             style={{
               padding: "10px",
               marginRight: "10px",
-              width: "50%",
+              width: "100%",
               marginBottom: "20px",
             }}
             value={input}
@@ -100,7 +105,7 @@ function App() {
       </div>
       <div>
         <ForceGraph2D
-          width={500}
+          width={800}
           linkDirectionalArrowLength={3.5}
           linkDirectionalArrowRelPos={1}
           linkCurvature={0.25}
