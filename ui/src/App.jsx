@@ -5,8 +5,6 @@ import ForceGraph2D from "react-force-graph-2d";
 function App() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
-  // const [nodes, setNodes] = useState([]);
-  // const [links, setLinks] = useState([]);
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
 
   const handleSubmit = async (e) => {
@@ -21,7 +19,6 @@ function App() {
 
     let nodeNames = new Set();
 
-    console.log(graph);
     graph.forEach((entry) => {
       const nNode = entry["n"];
       const rNode = entry["r"][0];
@@ -104,6 +101,9 @@ function App() {
       <div>
         <ForceGraph2D
           width={500}
+          linkDirectionalArrowLength={3.5}
+          linkDirectionalArrowRelPos={1}
+          linkCurvature={0.25}
           graphData={graphData}
           linkLabel="name"
           backgroundColor="white"

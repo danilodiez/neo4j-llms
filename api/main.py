@@ -27,7 +27,7 @@ llm = ChatOpenAI(openai_api_key=OPEN_AI_KEY, temperature=0)
 
 # Agent for querying the database
 CYPHER_GENERATION_TEMPLATE = """
-Task:Generate Cypher statement to query a graph database.
+Task: Generate Cypher statement to query a graph database.
 Instructions:
 Use only the provided relationship types and properties in the schema.
 Do not use any other relationship types or properties that are not provided.
@@ -35,12 +35,11 @@ Schema:
 {schema}
 Cypher examples:
 # How many streamers are from Norway?
-MATCH (s:Stream)-[:HAS_LANGUAGE]->(:Language {{name: 'no'}})
+MATCH (s:Streams)-[:HAS_LANGUAGE]->(:Language {{name: 'no'}})
 RETURN count(s) AS streamers
 
-Note: Do not include any explanations or apologies in your responses.
+Note: Do NOT include any explanations or apologies in your responses.
 Do not respond to any questions that might ask anything else than for you to construct a Cypher statement.
-Do not include any text except the generated Cypher statement.
 The question is:
 {question}
 """
@@ -56,7 +55,7 @@ cypher_chain = GraphCypherQAChain.from_llm(
     validate_cypher=True,
 )
 
-# Agent for creating/updating the neo4j schema is info not enough
+# Agent for creating/updating the neo4j schema is info is not enough
 GENERATE_GRAPH_PROMPT = '''
     You are a data scientist working for a company that is building a
     graph database. Your task is to extract information from user affirmations
@@ -122,8 +121,9 @@ agent_kwargs = {
 memory = ConversationBufferMemory(memory_key="memory", return_messages=True)
 
 
-# This sets an Agent with 2 tools, one for retrieving from Cypher, the other
-# for generating new knowledge with cypher queries
+# This sets an Agent with 3 tools, one for retrieving from Cypher, the other
+# for generating new knowledge with cypher queries, and the other one to update
+# the Neo4J schema
 agent = initialize_agent(
     tools,
     llm,
@@ -131,13 +131,8 @@ agent = initialize_agent(
     verbose=True,
     agent_kwargs=agent_kwargs,
     memory=memory,
+    handle_parsing_errors="Check your output and make sure it conforms!",
 )
-
-
-# response = ""
-# while (response != "end"):
-#     response = input("What do you want to ask the AI model? \n")
-#     agent.run(response)
 
 
 app = FastAPI()
@@ -158,8 +153,11 @@ async def root():
 
 @app.get("/chat/{input}")
 async def call_chat(input):
+    AGENT_PROMPT = '''Use only the provided tools, if you call the Search tool,
+    translate the cypher query to natural language to answer the user if the
+    user gives an affirmation, use Cypher Tool and then the Update-DB Tool'''
     return {
-        "response": agent.run(input),
+        "response": agent.run("{}-{}".format(input, AGENT_PROMPT)),
         "graph": graph.query("""
                              MATCH (n)-[r]->(m)
                             RETURN n, r, m
